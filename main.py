@@ -1,7 +1,7 @@
 import json
 import os
 from pathlib import Path
-
+import random
 
 import numpy as np
 
@@ -132,13 +132,18 @@ def extract_wifi_rssi(mwi_datas):
 
 def extract_ibeacon_rssi(mwi_datas):
     ibeacon_rssi = {}
-    for position_key in mwi_datas:
-        # print(f'Position: {position_key}')
+    uuid_list = []  # 用来存储所有的 iBeacon UUID
 
+    for position_key in mwi_datas:
         ibeacon_data = mwi_datas[position_key]['ibeacon']
         for ibeacon_d in ibeacon_data:
-            ummid = ibeacon_d[1]
+            ummid = ibeacon_d[1]  # 提取 UUID
             rssi = int(ibeacon_d[2])
+
+            # 打印并保存 UUID
+            if ummid not in uuid_list:
+                uuid_list.append(ummid)
+            print(f"Found iBeacon UUID: {ummid}")
 
             if ummid in ibeacon_rssi:
                 position_rssi = ibeacon_rssi[ummid]
@@ -155,7 +160,13 @@ def extract_ibeacon_rssi(mwi_datas):
 
             ibeacon_rssi[ummid] = position_rssi
 
+    # 随机选择三个 UUID 并打印
+    random_uuids = np.random.choice(uuid_list, 3, replace=False)
+    print(f"Randomly selected 3 iBeacon UUIDs: {random_uuids}")
+
     return ibeacon_rssi
+
+
 
 
 def extract_wifi_count(mwi_datas):
@@ -199,60 +210,108 @@ if __name__ == "__main__":
     print('Visualizing more information...')
     mwi_datas = calibrate_magnetic_wifi_ibeacon_to_position(path_filenames)
 
-    step_positions = np.array(list(mwi_datas.keys()))
-    fig = visualize_trajectory(step_positions, floor_plan_filename, width_meter, height_meter, mode='markers', title='Step Position', show=True)
-    html_filename = f'{step_position_image_save_dir}/step_position.html'
-    html_filename = str(Path(html_filename).resolve())
-    save_figure_to_html(fig, html_filename)
+    # step_positions = np.array(list(mwi_datas.keys()))
+    # fig = visualize_trajectory(step_positions, floor_plan_filename, width_meter, height_meter, mode='markers', title='Step Position', show=True)
+    # html_filename = f'{step_position_image_save_dir}/step_position.html'
+    # html_filename = str(Path(html_filename).resolve())
+    # save_figure_to_html(fig, html_filename)
 
-    magnetic_strength = extract_magnetic_strength(mwi_datas)
-    heat_positions = np.array(list(magnetic_strength.keys()))
-    heat_values = np.array(list(magnetic_strength.values()))
-    fig = visualize_heatmap(heat_positions, heat_values, floor_plan_filename, width_meter, height_meter, colorbar_title='mu tesla', title='Magnetic Strength', show=True)
-    html_filename = f'{magn_image_save_dir}/magnetic_strength.html'
-    html_filename = str(Path(html_filename).resolve())
-    save_figure_to_html(fig, html_filename)
+    # magnetic_strength = extract_magnetic_strength(mwi_datas)
+    # heat_positions = np.array(list(magnetic_strength.keys()))
+    # heat_values = np.array(list(magnetic_strength.values()))
+    # fig = visualize_heatmap(heat_positions, heat_values, floor_plan_filename, width_meter, height_meter, colorbar_title='mu tesla', title='Magnetic Strength', show=True)
+    # html_filename = f'{magn_image_save_dir}/magnetic_strength.html'
+    # html_filename = str(Path(html_filename).resolve())
+    # save_figure_to_html(fig, html_filename)
 
-    wifi_rssi = extract_wifi_rssi(mwi_datas)
-    print(f'This floor has {len(wifi_rssi.keys())} wifi aps')
-    ten_wifi_bssids = list(wifi_rssi.keys())[0:10]
-    print('Example 10 wifi ap bssids:\n')
-    for bssid in ten_wifi_bssids:
-        print(bssid)
-    target_wifi = input(f"Please input target wifi ap bssid:\n")
+    # wifi_rssi = extract_wifi_rssi(mwi_datas)
+    # print(f'This floor has {len(wifi_rssi.keys())} wifi aps')
+    # ten_wifi_bssids = list(wifi_rssi.keys())[0:10]
+    # print('Example 10 wifi ap bssids:\n')
+    # for bssid in ten_wifi_bssids:
+    #     print(bssid)
+    # # target_wifi = input(f"Please input target wifi ap bssid:\n")
     # target_wifi = '1e:74:9c:a7:b2:e4'
-    heat_positions = np.array(list(wifi_rssi[target_wifi].keys()))
-    heat_values = np.array(list(wifi_rssi[target_wifi].values()))[:, 0]
-    fig = visualize_heatmap(heat_positions, heat_values, floor_plan_filename, width_meter, height_meter, colorbar_title='dBm', title=f'Wifi: {target_wifi} RSSI', show=True)
-    html_filename = f'{wifi_image_save_dir}/{target_wifi.replace(":", "-")}.html'
-    html_filename = str(Path(html_filename).resolve())
-    save_figure_to_html(fig, html_filename)
+    # heat_positions = np.array(list(wifi_rssi[target_wifi].keys()))
+    # heat_values = np.array(list(wifi_rssi[target_wifi].values()))[:, 0]
+    # fig = visualize_heatmap(heat_positions, heat_values, floor_plan_filename, width_meter, height_meter, colorbar_title='dBm', title=f'Wifi: {target_wifi} RSSI', show=True)
+    # html_filename = f'{wifi_image_save_dir}/{target_wifi.replace(":", "-")}.html'
+    # html_filename = str(Path(html_filename).resolve())
+    # save_figure_to_html(fig, html_filename)
 
+    # ibeacon_rssi = extract_ibeacon_rssi(mwi_datas)
+    # print(f'This floor has {len(ibeacon_rssi.keys())} ibeacons')
+    # ten_ibeacon_ummids = list(ibeacon_rssi.keys())[0:10]
+    # print('Example 10 ibeacon UUID_MajorID_MinorIDs:\n')
+    # for ummid in ten_ibeacon_ummids:
+    #     print(ummid)
+    # # target_ibeacon = input(f"Please input target ibeacon UUID_MajorID_MinorID:\n")
+    # # target_ibeacon = 'FDA50693-A4E2-4FB1-AFCF-C6EB07647825_10073_61418'
+    # heat_positions = np.array(list(ibeacon_rssi[target_ibeacon].keys()))
+    # heat_values = np.array(list(ibeacon_rssi[target_ibeacon].values()))[:, 0]
+    # fig = visualize_heatmap(heat_positions, heat_values, floor_plan_filename, width_meter, height_meter, colorbar_title='dBm', title=f'iBeacon: {target_ibeacon} RSSI', show=True)
+    # html_filename = f'{ibeacon_image_save_dir}/{target_ibeacon}.html'
+    # html_filename = str(Path(html_filename).resolve())
+    # save_figure_to_html(fig, html_filename)
+
+    # wifi_counts = extract_wifi_count(mwi_datas)
+    # heat_positions = np.array(list(wifi_counts.keys()))
+    # heat_values = np.array(list(wifi_counts.values()))
+    # # filter out positions that no wifi detected
+    # mask = heat_values != 0
+    # heat_positions = heat_positions[mask]
+    # heat_values = heat_values[mask]
+    # fig = visualize_heatmap(heat_positions, heat_values, floor_plan_filename, width_meter, height_meter, colorbar_title='number', title=f'Wifi Count', show=True)
+    # html_filename = f'{wifi_count_image_save_dir}/wifi_count.html'
+    # html_filename = str(Path(html_filename).resolve())
+    # save_figure_to_html(fig, html_filename)
+
+    # My task
+    
+    # 提取 iBeacon RSSI 数据
     ibeacon_rssi = extract_ibeacon_rssi(mwi_datas)
     print(f'This floor has {len(ibeacon_rssi.keys())} ibeacons')
-    ten_ibeacon_ummids = list(ibeacon_rssi.keys())[0:10]
-    print('Example 10 ibeacon UUID_MajorID_MinorIDs:\n')
-    for ummid in ten_ibeacon_ummids:
-        print(ummid)
-    target_ibeacon = input(f"Please input target ibeacon UUID_MajorID_MinorID:\n")
-    # target_ibeacon = 'FDA50693-A4E2-4FB1-AFCF-C6EB07647825_10073_61418'
-    heat_positions = np.array(list(ibeacon_rssi[target_ibeacon].keys()))
-    heat_values = np.array(list(ibeacon_rssi[target_ibeacon].values()))[:, 0]
-    fig = visualize_heatmap(heat_positions, heat_values, floor_plan_filename, width_meter, height_meter, colorbar_title='dBm', title=f'iBeacon: {target_ibeacon} RSSI', show=True)
-    html_filename = f'{ibeacon_image_save_dir}/{target_ibeacon}.html'
-    html_filename = str(Path(html_filename).resolve())
-    save_figure_to_html(fig, html_filename)
 
-    wifi_counts = extract_wifi_count(mwi_datas)
-    heat_positions = np.array(list(wifi_counts.keys()))
-    heat_values = np.array(list(wifi_counts.values()))
-    # filter out positions that no wifi detected
-    mask = heat_values != 0
-    heat_positions = heat_positions[mask]
-    heat_values = heat_values[mask]
-    fig = visualize_heatmap(heat_positions, heat_values, floor_plan_filename, width_meter, height_meter, colorbar_title='number', title=f'Wifi Count', show=True)
-    html_filename = f'{wifi_count_image_save_dir}/wifi_count.html'
-    html_filename = str(Path(html_filename).resolve())
-    save_figure_to_html(fig, html_filename)
+    # 设置要生成的图的数量
+    num_figures_to_generate = 10
+    generated_figures = 0
+    attempted_ibeacons = 0  # 记录尝试处理了多少个 iBeacon
+
+    # 从所有 iBeacon 中依次选择
+    all_ibeacon_ummids = list(ibeacon_rssi.keys())
+
+    # 循环直到生成 num_figures_to_generate 个有效的 iBeacon 热图
+    while generated_figures < num_figures_to_generate and attempted_ibeacons < len(all_ibeacon_ummids):
+        # 随机选择一个 iBeacon
+        target_ibeacon = all_ibeacon_ummids[attempted_ibeacons]
+        attempted_ibeacons += 1
+
+        heat_positions = np.array(list(ibeacon_rssi[target_ibeacon].keys()))
+        
+        # 检查数据点数量是否大于等于 25
+        if len(heat_positions) < 25:
+            print(f"Skipping iBeacon {target_ibeacon} as it has less than 25 data points ({len(heat_positions)} points).")
+            continue  # 跳过该 iBeacon
+        
+        heat_values = np.array(list(ibeacon_rssi[target_ibeacon].values()))[:, 0]
+        
+        # 生成并显示热图
+        fig = visualize_heatmap(heat_positions, heat_values, floor_plan_filename, width_meter, height_meter, colorbar_title='dBm', title=f'iBeacon: {target_ibeacon} RSSI', show=True)
+        
+        # 保存热图为 HTML 文件
+        html_filename = f'{ibeacon_image_save_dir}/{target_ibeacon}.html'
+        html_filename = str(Path(html_filename).resolve())
+        save_figure_to_html(fig, html_filename)
+        
+        print(f"Saved heatmap for iBeacon {target_ibeacon} to {html_filename}")
+        
+        # 成功生成一个图后，计数器加1
+        generated_figures += 1
+
+    # 检查是否成功生成了10个图
+    if generated_figures < num_figures_to_generate:
+        print(f"Only generated {generated_figures} heatmaps, as there were not enough iBeacons with 25 or more data points.")
+    else:
+        print(f"Successfully generated {generated_figures} heatmaps.")
 
     print('fff')
